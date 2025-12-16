@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Assistant Data - Sales & Orders</title>
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary-color: #6366f1;
+      --accent-color: #a855f7;
+      --glass-bg: rgba(255, 255, 255, 0.85);
+      --glass-border: rgba(255, 255, 255, 0.3);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    
+    body {
+      font-family: 'Inter', sans-serif;
+      font-size: 14px;
+      /* Image de fond "High Tech Portal" */
+      background: url('https://marketplace.canva.com/MADFHQz8C_E/1/thumbnail_large/canva-purple-3d-high-tech-portal-MADFHQz8C_E.jpg') no-repeat center center fixed;
+      background-size: cover;
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      overflow: hidden;
+      color: #1e293b;
+    }
+    
+    /* --- HEADER --- */
+    #header {
+      background-color: rgba(15, 23, 42, 0.7);
+      backdrop-filter: blur(12px);
+      color: white;
+      padding: 15px 30px;
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+      display: flex;
+      align-items: center;
+      justify-content: space-between; /* Espace entre titre et bouton team */
+      flex-shrink: 0;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+    }
+    
+    #header h1 {
+      font-size: 18px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    /* Bouton Team en haut à droite */
+    .team-btn {
+      background: linear-gradient(135deg, #a855f7 0%, #ec4899 100%);
+      border: none;
+      padding: 8px 20px;
+      color: white;
+      border-radius: 20px;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 13px;
+      box-shadow: 0 4px 15px rgba(168, 85, 247, 0.4);
+      transition: transform 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .team-btn:hover {
+      transform: scale(1.05);
+    }
+    
+    /* --- CHAT AREA --- */
+    #chat-container {
+      flex: 1;
+      overflow-y: auto;
+      padding: 25px;
+      /* MODIFICATION ICI: Padding en bas pour laisser place à la barre fixe */
+      padding-bottom: 100px; 
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+      background-color: rgba(248, 250, 252, 0.8); /* Fond clair transparent */
+      backdrop-filter: blur(8px);
+      /* MODIFICATION ICI: On enlève la marge du bas */
+      margin: 20px 20px 0 20px; 
+      border-radius: 16px 16px 0 0; /* Arrondi seulement en haut pour coller au bas */
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+      border: 1px solid var(--glass-border);
+    }
+    
+    /* Scrollbar */
+    #chat-container::-webkit-scrollbar { width: 6px; }
+    #chat-container::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.2); border-radius: 3px; }
+    
+    .message {
+      max-width: 80%;
+      padding: 14px 18px;
+      border-radius: 12px;
+      line-height: 1.6;
+      font-size: 14px;
+      position: relative;
+      animation: slideIn 0.3s ease-out;
+    }
+    
+    @keyframes slideIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    
+    .user-msg {
+      align-self: flex-end;
+      background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+      color: white;
+      border-bottom-right-radius: 2px;
+      box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
+    }
+    
+    .bot-msg {
+      align-self: flex-start;
+      background-color: white;
+      color: #334155;
+      border-bottom-left-radius: 2px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    }
+    
+    .message-time {
+      font-size: 10px;
+      opacity: 0.6;
+      margin-top: 5px;
+      text-align: right;
+    }
+    
+    /* Code DAX */
+    pre {
+      background: #1e293b;
+      color: #e2e8f0;
+      padding: 15px;
+      border-radius: 8px;
+      overflow-x: auto;
+      margin: 10px 0;
+      border-left: 4px solid #a855f7;
+      font-family: 'Fira Code', monospace;
+      font-size: 13px;
+    }
+    
+    code {
+      font-family: 'Fira Code', monospace;
+      font-weight: bold;
+      color: #d946ef;
+    }
+    
+    pre code { color: inherit; font-weight: normal; }
+    
+    /* --- INPUT AREA --- */
+    #input-area {
+      /* MODIFICATION ICI: Position Fixe pour rester TOUJOURS en bas */
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      z-index: 1000;
+      
+      padding: 20px 30px;
+      background: none;
+      backdrop-filter: blur(10px);
+      border-top: 1px solid rgba(255,255,255,0.2);
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      box-shadow: 0 -4px 20px rgba(0,0,0,0.05);
+    }
+    
+    #input {
+      flex: 1;
+      padding: 14px 20px;
+      border: 1px solid #cbd5e1;
+      border-radius: 25px;
+      outline: none;
+      font-family: 'Inter', sans-serif;
+      transition: all 0.3s;
+      background: rgba(255,255,255,0.8);
+    }
+    
+    #input:focus {
+      border-color: var(--primary-color);
+      box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
+      background: white;
+    }
+    
+    #btn {
+      padding: 14px 30px;
+      background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+      color: white;
+      border: none;
+      border-radius: 25px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: transform 0.2s;
+    }
+    
+    #btn:hover { transform: translateY(-2px); }
+    
+    /* --- WELCOME SCREEN --- */
+    .welcome-message { text-align: center; padding: 40px 20px; color: #475569; }
+    .welcome-message h2 { color: #1e293b; margin-bottom: 10px; font-size: 24px; }
+    
+    .suggestions {
+      display: flex;
+      gap: 12px;
+      justify-content: center;
+      flex-wrap: wrap;
+      margin-top: 30px;
+    }
+    
+    .chip {
+      background: white;
+      padding: 10px 20px;
+      border-radius: 30px;
+      font-size: 13px;
+      cursor: pointer;
+      color: #4f46e5;
+      font-weight: 600;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+      transition: all 0.3s;
+      border: 1px solid transparent;
+    }
+    
+    .chip:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 10px 15px rgba(99, 102, 241, 0.2);
+      border-color: #a855f7;
+    }
+
+    /* --- MODAL TEAM --- */
+    .modal {
+      display: none; 
+      position: fixed; 
+      z-index: 2000; /* Z-index augmenté pour passer au dessus de la barre */
+      left: 0;
+      top: 0;
+      width: 100%; 
+      height: 100%; 
+      background-color: rgba(0,0,0,0.6); 
+      backdrop-filter: blur(5px);
+      animation: fadeIn 0.3s;
+    }
+
+    .modal-content {
+      background: rgba(255, 255, 255, 0.95);
+      margin: 10% auto; 
+      padding: 30px;
+      border-radius: 20px;
+      width: 80%;
+      max-width: 700px;
+      text-align: center;
+      position: relative;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+    }
+
+    .close-modal {
+      position: absolute;
+      top: 15px;
+      right: 20px;
+      color: #aaa;
+      font-size: 28px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    .close-modal:hover { color: #000; }
+
+    .team-grid {
+      display: flex;
+      justify-content: center;
+      gap: 30px;
+      margin-top: 30px;
+      flex-wrap: wrap;
+    }
+
+    .team-member {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      width: 150px;
+    }
+
+    .member-img {
+      width: 100px;
+      height: 100px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 4px solid #a855f7;
+      padding: 2px;
+      background: white;
+      margin-bottom: 10px;
+      box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+      transition: transform 0.3s;
+    }
+
+    .team-member:hover .member-img { transform: scale(1.1) rotate(3deg); }
+
+    .member-name { font-weight: 700; color: #1e293b; margin-bottom: 5px; }
+    .member-role { font-size: 12px; color: #64748b; margin-bottom: 10px; }
+    
+    .linkedin-link {
+      color: #0077b5;
+      text-decoration: none;
+      font-size: 12px;
+      font-weight: 600;
+      border: 1px solid #0077b5;
+      padding: 4px 12px;
+      border-radius: 15px;
+      transition: all 0.2s;
+    }
+    
+    .linkedin-link:hover { background: #0077b5; color: white; }
+
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+  </style>
+</head>
+<body>
+
+  <div id="header">
+    <h1><span>📊</span> Assistant DAX</h1>
+    <!-- BOUTON TEAM -->
+    <button class="team-btn" onclick="openModal()">👥 Notre Team</button>
+  </div>
+  
+  <div id="chat-container">
+    <div class="welcome-message">
+      <span style="font-size: 50px; display:block; margin-bottom:10px;">🤖</span>
+      <h2>Générateur DAX - Orders & Details</h2>
+      <p>
+        Je connais la structure de vos tables <strong>Orders</strong> et <strong>Details</strong>.<br>
+        Demandez-moi n'importe quelle mesure (Profit, Quantité, Clients...).
+      </p>
+      
+      <!-- SUGGESTIONS ADAPTÉES AUX TABLES DETAILS ET ORDERS -->
+      <div class="suggestions">
+        <div class="chip" onclick="setInput('Calculer le Profit Total (Details)')">💰 Profit Total</div>
+        <div class="chip" onclick="setInput('Nombre de commandes (Orders)')">📦 Nb Commandes</div>
+        <div class="chip" onclick="setInput('Quantité vendue par Catégorie')">📊 Qté par Catégorie</div>
+        <div class="chip" onclick="setInput('Somme Amount par Ville')">🏙 Ventes par Ville</div>
+      </div>
+    </div>
+  </div>
+  
+  <div id="input-area">
+    <input id="input" type="text" placeholder="Ex: Calcule la marge par Sub-Category..." autocomplete="off">
+    <button id="btn">Envoyer</button>
+  </div>
+
+  <!-- MODAL TEAM -->
+  <div id="team-modal" class="modal">
+    <div class="modal-content">
+      <span class="close-modal" onclick="closeModal()">&times;</span>
+      <h2 style="color:#6366f1;">Les Créateurs</h2>
+      <p style="color:#64748b;">L'équipe derrière ce projet innovant.</p>
+      
+      <div class="team-grid">
+        <!-- MEMBRE 1 -->
+        <div class="team-member">
+          <img src="https://media.licdn.com/dms/image/v2/D4E03AQEI7ECgf9lx4w/profile-displayphoto-shrink_400_400/profile-displayphoto-shrink_400_400/0/1711490653447?e=1766620800&v=beta&t=pz5TqBqoK1nqaT5ydne_kjt53e7ibjcNTMaZrGXwUPI" alt="Membre 1" class="member-img">
+          <div class="member-name">Z.Fadili</div>
+          <div class="member-role">Data Analyst</div>
+          <a href="https://www.linkedin.com/in/anas-roui-316b24234 " class="linkedin-link">LinkedIn ➜</a>
+        </div>
+
+        <!-- MEMBRE 2 -->
+        <div class="team-member">
+          <img src="https://media.licdn.com/dms/image/v2/D4E03AQG5JlQviR0VUg/profile-displayphoto-scale_400_400/B4EZgAnnyeHoAg-/0/1752357044579?e=1766620800&v=beta&t=yoGtqSLAPRijv4FYUL6v3Qnm9K7dhydS6keIB4z3_UM" alt="Membre 2" class="member-img">
+          <div class="member-name">A.Houbadi</div>
+          <div class="member-role">Data Analyst</div>
+          <a href="https://www.linkedin.com/in/abderrahim-houbbadi " class="linkedin-link">LinkedIn ➜</a>
+        </div>
+
+        <!-- MEMBRE 3 -->
+        <div class="team-member">
+          <img src="https://media.licdn.com/dms/image/v2/D4E03AQGGMfr05TnbcA/profile-displayphoto-scale_400_400/B4EZnzc_hhIMAg-/0/1760726088309?e=1766620800&v=beta&t=QhF38KK3hB_p4kmlhKZovOXhv4kEyVO4aN_4Qsi1AYA" alt="Membre 3" class="member-img">
+          <div class="member-name">A.ROUI</div>
+          <div class="member-role">Data Analyst</div>
+          <a href="https://www.linkedin.com/in/zakariya-fadili-3a518b2a4 " class="linkedin-link">LinkedIn ➜</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const box = document.getElementById("chat-container");
+    const input = document.getElementById("input");
+    const btn = document.getElementById("btn");
+    const modal = document.getElementById("team-modal");
+    
+    let conversationHistory = [];
+
+    // --- GESTION DU MODAL ---
+    function openModal() {
+      modal.style.display = "block";
+    }
+    function closeModal() {
+      modal.style.display = "none";
+    }
+    // Fermer si on clique en dehors du contenu
+    window.onclick = function(event) {
+      if (event.target == modal) {
+        modal.style.display = "none";
+      }
+    }
+
+    // --- CHAT LOGIC ---
+    window.setInput = function(text) {
+      input.value = text;
+      input.focus();
+    }
+    
+    function getTimeString() {
+      return new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+    }
+    
+    function addMessage(role, text) {
+      const welcome = box.querySelector('.welcome-message');
+      if (welcome) welcome.remove();
+      
+      const msg = document.createElement("div");
+      msg.classList.add("message");
+      msg.classList.add(role === "Moi" ? "user-msg" : "bot-msg");
+      
+      let formattedText = text
+        .replace(/dax([^]*)/g, '<pre><code>$1</code></pre>') 
+        .replace(/([^]*)/g, '<pre><code>$1</code></pre>')    
+        .replace(/\\(.?)\\*/g, '<strong>$1</strong>')          
+        .replace(/([^]+)`/g, '<code>$1</code>')                  
+        .replace(/\n/g, '<br>');
+      
+      msg.innerHTML = formattedText;
+      
+      const timeDiv = document.createElement("div");
+      timeDiv.classList.add("message-time");
+      timeDiv.textContent = getTimeString();
+      msg.appendChild(timeDiv);
+      
+      box.appendChild(msg);
+      box.scrollTop = box.scrollHeight;
+    }
+    
+    function showTypingIndicator() {
+      const indicator = document.createElement("div");
+      indicator.className = "message bot-msg";
+      indicator.id = "typing";
+      indicator.innerHTML = '<i>Écrit...</i>';
+      box.appendChild(indicator);
+      box.scrollTop = box.scrollHeight;
+    }
+    
+    function removeTypingIndicator() {
+      const indicator = document.getElementById("typing");
+      if (indicator) indicator.remove();
+    }
+    
+    async function sendMessage() {
+      const prompt = input.value.trim();
+      if (!prompt) return;
+      
+      addMessage("Moi", prompt);
+      conversationHistory.push({ role: "user", content: prompt });
+      input.value = "";
+      
+      btn.disabled = true;
+      btn.innerText = "...";
+      showTypingIndicator();
+      
+      try {
+        // --- CONTEXTE SPÉCIFIQUE À TES TABLES ---
+        const systemPrompt = `
+          Tu es un assistant expert DAX.
+          Voici le modèle de données :
+          1. Table 'Details' (Colonnes: Amount, Category, Order ID, PaymentMode, Profit, Quantity, Sub-Category).
+          2. Table 'Orders' (Colonnes: City, CustomerName, Order Date, Order ID, State).
+          La relation se fait sur 'Order ID'.
+          Utilise ces noms de colonnes exacts. Donne le code DAX sans commentaire dans le bloc de code.
+        `;
+
+        const requestBody = {
+          prompt: prompt,
+          system_instruction: systemPrompt,
+          history: conversationHistory.slice(-6)
+        };
+        
+        const response = await fetch("http://localhost:8000/chat", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(requestBody)
+        });
+        
+        if (!response.ok) throw new Error("Erreur serveur");
+        
+        const data = await response.json();
+        removeTypingIndicator();
+        addMessage("LLM", data.reply);
+        conversationHistory.push({ role: "assistant", content: data.reply });
+        
+      } catch (error) {
+        removeTypingIndicator();
+        addMessage("LLM", "⚠ Erreur connexion IA.");
+        console.error(error);
+      } finally {
+        btn.disabled = false;
+        btn.innerText = "Envoyer";
+        input.focus();
+      }
+    }
+    
+    btn.onclick = sendMessage;
+    input.addEventListener("keypress", (e) => { if (e.key === "Enter") { e.preventDefault(); sendMessage(); } });
+    
+    window.onload = function() { input.focus(); };
+  </script>
+</body>
+</html>
+
