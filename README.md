@@ -1,4 +1,4 @@
-# Projet LAMRANI – Dashboard & LLM Analysis
+# Projet– Dashboard & LLM Analysis
 
 ## Objectif
 Développement d’un outil d’analyse et de visualisation des données commerciales
